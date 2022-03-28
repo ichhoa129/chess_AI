@@ -28,7 +28,7 @@ var config = {
   onMouseoverSquare: onMouseoverSquare,
   onSnapEnd: onSnapEnd,
 };
-board = Chessboard('myBoard', config);
+board = Chessboard('myBoard');
 
 timer = null;
 
@@ -38,7 +38,7 @@ timer = null;
  */
 
 /**
- * P: pawn - tot 
+ * P: pawn - tot
  * n: knight - ma
  * b: bishop - tuong
  * r: rook -  xe
@@ -151,8 +151,7 @@ function evaluateBoard(game, move, prevSum, color) {
     }
   }
 
-  if (game.in_draw() || game.in_threefold_repetition() || game.in_stalemate())
-  {
+  if (game.in_draw() || game.in_threefold_repetition() || game.in_stalemate()) {
     return 0;
   }
 
@@ -500,8 +499,25 @@ $('#sicilianDefenseBtn').on('click', function () {
   game.load('rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1');
   board.position(game.fen());
 });
+
+function ajaxStart(depth) {
+  const body = {
+    depth: depth,
+  };
+  $.ajax({
+    headers: {
+      'Content-Type': 'application/json',
+      'Data-Type': 'json',
+    },
+    type: 'POST',
+    url: '/api/start',
+    data: JSON.stringify(body),
+  });
+}
+
 $('#startBtn').on('click', function () {
-  reset();
+  board = Chessboard('myBoard', config);
+  ajaxStart(parseInt($('#search-depth').find(':selected').text()));
 });
 
 $('#compVsCompBtn').on('click', function () {
@@ -602,7 +618,7 @@ function greySquare(square) {
 
 function onDragStart(source, piece) {
   // do not pick up pieces if the game is over
-  if (game.game_over()) return false; 
+  if (game.game_over()) return false;
 
   // or if it's not that side's turn
   if (
@@ -611,6 +627,21 @@ function onDragStart(source, piece) {
   ) {
     return false;
   }
+}
+
+function ajaxMove(move) {
+  const body = {
+    data: move.from + move.to,
+  };
+  $.ajax({
+    headers: {
+      'Content-Type': 'application/json',
+      'Data-Type': 'json',
+    },
+    type: 'POST',
+    url: '/api/move',
+    data: JSON.stringify(body),
+  });
 }
 
 function onDrop(source, target) {
@@ -626,6 +657,9 @@ function onDrop(source, target) {
 
   // Illegal move
   if (move === null) return 'snapback';
+
+  // Send the move to the server
+  ajaxMove(move);
 
   globalSum = evaluateBoard(game, move, globalSum, 'b');
   updateAdvantage();
