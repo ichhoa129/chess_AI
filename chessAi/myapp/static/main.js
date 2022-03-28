@@ -602,7 +602,7 @@ function greySquare(square) {
 
 function onDragStart(source, piece) {
   // do not pick up pieces if the game is over
-  if (game.game_over()) return false;
+  if (game.game_over()) return false; 
 
   // or if it's not that side's turn
   if (
