@@ -138,7 +138,6 @@ var pstSelf = { w: pst_w, b: pst_b };
  * using the material weights and piece square tables.
  */
 function evaluateBoard(game, move, prevSum, color) {
-
   if (game.in_checkmate()) {
 
     // Opponent is in checkmate (good for us)
@@ -186,6 +185,8 @@ function evaluateBoard(game, move, prevSum, color) {
     // }
   }
 
+
+
   if ('captured' in move) {
     // Opponent piece was captured (good for us)
     if (move.color === color) {
@@ -201,6 +202,7 @@ function evaluateBoard(game, move, prevSum, color) {
     }
   }
 
+
   if (move.flags.includes('p')) {
     // NOTE: promote to queen for simplicity
     move.promotion = 'q';
@@ -214,7 +216,7 @@ function evaluateBoard(game, move, prevSum, color) {
         pstSelf[move.color][move.promotion][to[0]][to[1]];
     }
     // Opponent piece was promoted (bad for us)
-    else {
+    else {x
       prevSum +=
         weights[move.piece] + pstSelf[move.color][move.piece][from[0]][from[1]];
       prevSum -=
@@ -230,6 +232,7 @@ function evaluateBoard(game, move, prevSum, color) {
       prevSum -= pstSelf[move.color][move.piece][from[0]][from[1]];
       prevSum += pstSelf[move.color][move.piece][to[0]][to[1]];
     }
+
   }
 
   return prevSum;
@@ -565,37 +568,37 @@ function redo() {
   board.position(game.fen());
 }
 
-$('#redoBtn').on('click', function () {
-  if (undo_stack.length >= 2) {
-    // Redo twice: Player's last move, followed by opponent's last move
-    redo();
-    window.setTimeout(function () {
-      redo();
-      window.setTimeout(function () {
-        showHint();
-      }, 250);
-    }, 250);
-  } else {
-    alert('Nothing to redo.');
-  }
-});
+// $('#redoBtn').on('click', function () {
+//   if (undo_stack.length >= 2) {
+//     // Redo twice: Player's last move, followed by opponent's last move
+//     redo();
+//     window.setTimeout(function () {
+//       redo();
+//       window.setTimeout(function () {
+//         showHint();
+//       }, 250);
+//     }, 250);
+//   } else {
+//     alert('Nothing to redo.');
+//   }
+// });
 
-$('#showHint').change(function () {
-  window.setTimeout(showHint, 250);
-});
+// $('#showHint').change(function () {
+//   window.setTimeout(showHint, 250);
+// });
 
-function showHint() {
-  var showHint = document.getElementById('showHint');
-  $board.find('.' + squareClass).removeClass('highlight-hint');
+// function showHint() {
+//   var showHint = document.getElementById('showHint');
+//   $board.find('.' + squareClass).removeClass('highlight-hint');
 
-  // Show hint (best move for white)
-  if (showHint.checked) {
-    var move = getBestMove(game, 'w', -globalSum)[0];
+//   // Show hint (best move for white)
+//   if (showHint.checked) {
+//     var move = getBestMove(game, 'w', -globalSum)[0];
 
-    $board.find('.square-' + move.from).addClass('highlight-hint');
-    $board.find('.square-' + move.to).addClass('highlight-hint');
-  }
-}
+//     $board.find('.square-' + move.from).addClass('highlight-hint');
+//     $board.find('.square-' + move.to).addClass('highlight-hint');
+//   }
+// }
 
 /*
  * The remaining code is adapted from chessboard.js examples #5000 through #5005:
@@ -631,7 +634,7 @@ function onDragStart(source, piece) {
 
 function ajaxMove(move) {
   const body = {
-    data: move.from + move.to,
+    data: move,
   };
   $.ajax({
     headers: {
@@ -655,12 +658,13 @@ function onDrop(source, target) {
     promotion: 'q', // NOTE: always promote to a queen for example simplicity
   });
 
+  // console.log(move)
+
   // Illegal move
   if (move === null) return 'snapback';
 
   // Send the move to the server
   ajaxMove(move);
-
   globalSum = evaluateBoard(game, move, globalSum, 'b');
   updateAdvantage();
 
@@ -681,7 +685,7 @@ function onDrop(source, target) {
     window.setTimeout(function () {
       makeBestMove('b');
       window.setTimeout(function () {
-        showHint();
+        // showHint();
       }, 250);
     }, 250);
   }
