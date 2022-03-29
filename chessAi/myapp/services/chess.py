@@ -97,7 +97,7 @@ class Chess:
     global_sum = 0
 
     def getMove(self, game: Board, move, depth, color):
-        white_score = self.evaluate_board(game.board, move, self.global_sum, 'b')
+        white_score = self.evaluate_board(game, move, self.global_sum, 'b')
         
         bestMove = self.makeBestMove(game, 'b', move, depth)
         
@@ -118,6 +118,12 @@ class Chess:
             )
 
     def makeBestMove(self, game: Board, color, move, depth):
+        
+        res = game.push_uci(move['from'] + move['to'])
+        # print(res)
+        # print(game.fen())
+        if game.is_legal(res):
+            raise Exception("Illegal move")
         if color == 'b':
             move = self.getBestMove(game, color, self.global_sum, depth)
         else:
@@ -125,10 +131,7 @@ class Chess:
         
         self.global_sum = self.evaluate_board(game, move, self.global_sum, 'b')
 
-        res = game.push_uci(move['from'] + move['to'])
-        
-        if game.is_legal(res):
-            raise Exception("Illegal move")
+  
         
 
     def evaluate_board(self, game: Board, move, prev_sum, color):
@@ -158,7 +161,7 @@ class Chess:
             if move['piece'] == 'k':
                 move['piece'] = 'k_e'
 
-        if 'captured' in move.keys():
+        if 'captured' in move.keys() and move['captured'] != None:
             # check opponent piece was captured (good for us)
             if move['color'] == color:
                 prev_sum += self.weights[move['captured']] + self.pst_opponent[move['color']
@@ -197,24 +200,32 @@ class Chess:
         return prev_sum
 
     def minimax(self, game: Board, depth, alpha, beta, is_maximizing_player, sum, color):
-        position_count += 1
+        # position_count += 1
+        # print(game.fen())
         children = [{
+            'color': 'w' if game.turn == 'white' else 'b',
             'from': move.uci()[:2],
             'to': move.uci()[2:],
-            'piece': game.piece_at(move.from_square),
+            'piece': game.piece_at(move.from_square).symbol().lower(),
             'captured': game.piece_at(move.to_square),
-            'promotion': move.promotion,
+            'promotion': 'q',
+            'flags': 'p' if game.promoted else 'n'
         } for move in game.legal_moves]
         
-        if depth == 0 or children.length == 0: return [None, sum]
+        # print(children)
+                
+        if depth == 0 or len(children) == 0: return [None, sum]
 
         max_value = -math.inf
         min_value = math.inf
         
         for i in range(len(children)):
-            current_move = children[i]
-            current_pretty_move = game.ugly_move(current_move) #ggstet ugly move
-            new_sum = self.evaluate_board(game, current_pretty_move, sum, color)
+            # cloneGame = game.copy()
+            # cloneGame.push_uci(children[i]['from'] + children[i]['to'])
+           
+            new_sum = self.evaluate_board(game, children[i], sum, color)
+            print(new_sum)
+            
             [child_best_move, child_value] = self.minimax(game, depth - 1, alpha, beta, not is_maximizing_player, new_sum, color)
         
             # game.undo()
@@ -222,12 +233,14 @@ class Chess:
             if is_maximizing_player:
                 if child_value > max_value:
                     max_value = child_value
-                    best_move = current_pretty_move
+                    best_move = children[i]
+                    # best_move = current_pretty_move
                 alpha = max(alpha, max_value)
             else:
                 if child_value < min_value:
                     min_value = child_value
-                    best_move = current_pretty_move
+                    best_move = children[i]
+                    # best_move = current_pretty_move
                 beta = min(beta, min_value)
             
             if alpha >= beta: break

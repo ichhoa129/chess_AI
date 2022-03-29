@@ -258,8 +258,8 @@ function evaluateBoard(game, move, prevSum, color) {
 function minimax(game, depth, alpha, beta, isMaximizingPlayer, sum, color) {
   positionCount++;
   var children = game.ugly_moves({ verbose: true });
-  console.log(children)
-  console.log('--=============')
+  // console.log(children)
+  // console.log('--=============')
 
   // Sort moves randomly, so the same move isn't always picked on ties
   children.sort(function (a, b) {
@@ -282,6 +282,7 @@ function minimax(game, depth, alpha, beta, isMaximizingPlayer, sum, color) {
     // Note: in our case, the 'children' are simply modified game states
     var currPrettyMove = game.ugly_move(currMove);
     var newSum = evaluateBoard(game, currPrettyMove, sum, color);
+    console.log(newSum)
     var [childBestMove, childValue] = minimax(
       game,
       depth - 1,
