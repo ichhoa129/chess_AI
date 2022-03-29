@@ -216,7 +216,7 @@ function evaluateBoard(game, move, prevSum, color) {
         pstSelf[move.color][move.promotion][to[0]][to[1]];
     }
     // Opponent piece was promoted (bad for us)
-    else {x
+    else {
       prevSum +=
         weights[move.piece] + pstSelf[move.color][move.piece][from[0]][from[1]];
       prevSum -=
@@ -258,6 +258,8 @@ function evaluateBoard(game, move, prevSum, color) {
 function minimax(game, depth, alpha, beta, isMaximizingPlayer, sum, color) {
   positionCount++;
   var children = game.ugly_moves({ verbose: true });
+  console.log(children)
+  console.log('--=============')
 
   // Sort moves randomly, so the same move isn't always picked on ties
   children.sort(function (a, b) {
@@ -383,6 +385,10 @@ function getBestMove(game, color, currSum) {
     currSum,
     color
   );
+
+  console.log(bestMove);
+  console.log(bestMoveValue);
+
   var d2 = new Date().getTime();
   var moveTime = d2 - d;
   var positionsPerS = (positionCount * 1000) / moveTime;
@@ -403,6 +409,8 @@ function makeBestMove(color) {
   } else {
     var move = getBestMove(game, color, -globalSum)[0];
   }
+
+  console.log(move);
 
   globalSum = evaluateBoard(game, move, globalSum, 'b');
   updateAdvantage();

@@ -26,7 +26,9 @@ def move(request):
     
 @api_view(['POST'])
 def start(request):
+    data = request.data
     game = Game()
+    game.depth = data['depth']
     res = game.start()
     if res:
         return Response({'status': 'ok'})

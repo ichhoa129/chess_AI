@@ -94,6 +94,43 @@ class Chess:
     pst_opponent = {'w': pst_b, 'b': pst_w}
     pst_self = {'w': pst_w, 'b': pst_b}
 
+    global_sum = 0
+
+    def getMove(self, game: Board, move, depth, color):
+        white_score = self.evaluate_board(game.board, move, self.global_sum, 'b')
+        
+        bestMove = self.makeBestMove(game, 'b', move, depth)
+        
+
+        return {
+            white_score: white_score
+        }
+
+    def getBestMove(self, game: Board, color: str,cur_sum, depth):
+        return self.minimax(
+            game, 
+            depth, 
+            -math.inf,
+            math.inf,
+            True,
+            cur_sum,
+            color
+            )
+
+    def makeBestMove(self, game: Board, color, move, depth):
+        if color == 'b':
+            move = self.getBestMove(game, color, self.global_sum, depth)
+        else:
+            move = self.getBestMove(game, color, -self.global_sum, depth)
+        
+        self.global_sum = self.evaluate_board(game, move, self.global_sum, 'b')
+
+        res = game.push_uci(move['from'] + move['to'])
+        
+        if game.is_legal(res):
+            raise Exception("Illegal move")
+        
+
     def evaluate_board(self, game: Board, move, prev_sum, color):
         if game.is_checkmate():  # game in checkmate
             # Check color if opponent is in checkmate (good for us)
@@ -102,7 +139,7 @@ class Chess:
             else:  # Our king's in checkmate (bad for us)
                 return -(10 ** 10)
 
-        if game.is_stalemate() or game.is_fivefold_repetition():  # in draw, in threefold repetition, in stalemate
+        if game.is_stalemate() or game.can_claim_threefold_repetition() or game.is_variant_draw():  # in draw, in threefold repetition, in stalemate
             return 0
 
         if game.is_check():  # game in check
@@ -159,9 +196,15 @@ class Chess:
 
         return prev_sum
 
-    def minimax(self, game, depth, alpha, beta, is_maximizing_player, sum, color):
-        # position_count += 1
-        children = [] # children get ugly_moves
+    def minimax(self, game: Board, depth, alpha, beta, is_maximizing_player, sum, color):
+        position_count += 1
+        children = [{
+            'from': move.uci()[:2],
+            'to': move.uci()[2:],
+            'piece': game.piece_at(move.from_square),
+            'captured': game.piece_at(move.to_square),
+            'promotion': move.promotion,
+        } for move in game.legal_moves]
         
         if depth == 0 or children.length == 0: return [None, sum]
 
@@ -170,7 +213,7 @@ class Chess:
         
         for i in range(len(children)):
             current_move = children[i]
-            current_pretty_move = game.ugly_move(current_move) #get ugly move
+            current_pretty_move = game.ugly_move(current_move) #ggstet ugly move
             new_sum = self.evaluate_board(game, current_pretty_move, sum, color)
             [child_best_move, child_value] = self.minimax(game, depth - 1, alpha, beta, not is_maximizing_player, new_sum, color)
         

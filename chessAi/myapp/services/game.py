@@ -1,4 +1,5 @@
 from ast import Raise
+from distutils import dep_util
 import numpy as np
 import chess
 
@@ -11,6 +12,7 @@ class Game(metaclass=SingletonMeta):
     isPlaying = False
     board = None
     current_move = None
+    depth = 4
     weights =  { 'p': 100, 'n': 280, 'b': 320, 'r': 479, 'q': 929, 'k': 60000, 'k_e': 60000 }
 
     pst_w = {
@@ -120,16 +122,10 @@ class Game(metaclass=SingletonMeta):
     def move(self, move):
         if not self.isPlaying:
             Raise(Exception("Game is not started"))
-        mov = move['from'] + move['to']
         self.current_move = move
-        res = self.board.push_uci(mov)
-        if self.board.is_legal(res):
-            raise Exception("Illegal move")
-        print(res)
         gameBoard = Chess()
-        score = gameBoard.evaluate_board(self.board, move, 0, 'b')
-        print(score)
-        return score
+        result = gameBoard.getMove(self.board, move, self.depth, 'b')
+        return result
 
 
 
