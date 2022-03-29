@@ -1,4 +1,6 @@
+import math
 from chess import Board
+
 
 class Chess:
     weights = {'p': 100, 'n': 280, 'b': 320,
@@ -100,7 +102,7 @@ class Chess:
             else:  # Our king's in checkmate (bad for us)
                 return -(10 ** 10)
 
-        if game.is_stalemate() or game.is_fivefold_repetition(): # in draw, in threefold repetition, in stalemate
+        if game.is_stalemate() or game.is_fivefold_repetition():  # in draw, in threefold repetition, in stalemate
             return 0
 
         if game.is_check():  # game in check
@@ -114,7 +116,6 @@ class Chess:
                          ord(move['from'][0]) - ord('a')]
         to_position = [8 - int(move['to'][1]),
                        ord(move['to'][0]) - ord('a')]
-    
 
         if prev_sum < -1500:
             if move['piece'] == 'k':
@@ -124,28 +125,68 @@ class Chess:
             # check opponent piece was captured (good for us)
             if move['color'] == color:
                 prev_sum += self.weights[move['captured']] + self.pst_opponent[move['color']
-                                                                ][move['captured']][to_position[0]][to_position[1]]
+                                                                               ][move['captured']][to_position[0]][to_position[1]]
             # Our piece was captured (bad for us)
-            else:  
-                prev_sum -= self.weights[move['captured']] + self.pst_self[move['color']
-                                                                    ][move['captured']][to_position[0]][to_position[1]]
-        
-        if move['flags'] == 'p':
-            # promote to queen 
-            move['promotion'] = 'q'
-            
-            if move['color'] == color:
-                prev_sum -= self.weights[move['piece']] + self.pst_self[move['color']][move['piece']][from_position[0]][from_position[1]]
-                prev_sum += self.weights[move['promotion']] + self.pst_self[move['color']][move['promotion']][to_position[0]][to_position[1]]
             else:
-                prev_sum += self.weights[move['piece']] + self.pst_self[move['color']][move['piece']][from_position[0]][from_position[1]]
-                prev_sum -= self.weights[move['promotion']] + self.pst_self[move['color']][move['promotion']][to_position[0]][to_position[1]]
+                prev_sum -= self.weights[move['captured']] + self.pst_self[move['color']
+                                                                           ][move['captured']][to_position[0]][to_position[1]]
+
+        if move['flags'] == 'p':
+            # promote to queen
+            move['promotion'] = 'q'
+
+            if move['color'] == color:
+                prev_sum -= self.weights[move['piece']] + self.pst_self[move['color']
+                                                                        ][move['piece']][from_position[0]][from_position[1]]
+                prev_sum += self.weights[move['promotion']] + self.pst_self[move['color']
+                                                                            ][move['promotion']][to_position[0]][to_position[1]]
+            else:
+                prev_sum += self.weights[move['piece']] + self.pst_self[move['color']
+                                                                        ][move['piece']][from_position[0]][from_position[1]]
+                prev_sum -= self.weights[move['promotion']] + self.pst_self[move['color']
+                                                                            ][move['promotion']][to_position[0]][to_position[1]]
         else:
             if move['color'] == color:
-                prev_sum += self.pst_self[move['color']][move['piece']][from_position[0]][from_position[1]]
-                prev_sum -= self.pst_self[move['color']][move['piece']][to_position[0]][to_position[1]]
+                prev_sum += self.pst_self[move['color']
+                                          ][move['piece']][from_position[0]][from_position[1]]
+                prev_sum -= self.pst_self[move['color']
+                                          ][move['piece']][to_position[0]][to_position[1]]
             else:
-                prev_sum -= self.pst_self[move['color']][move['piece']][from_position[0]][from_position[1]]
-                prev_sum += self.pst_self[move['color']][move['piece']][to_position[0]][to_position[1]]
-        
+                prev_sum -= self.pst_self[move['color']
+                                          ][move['piece']][from_position[0]][from_position[1]]
+                prev_sum += self.pst_self[move['color']
+                                          ][move['piece']][to_position[0]][to_position[1]]
+
         return prev_sum
+
+    def minimax(self, game, depth, alpha, beta, is_maximizing_player, sum, color):
+        # position_count += 1
+        children = [] # children get ugly_moves
+        
+        if depth == 0 or children.length == 0: return [None, sum]
+
+        max_value = -math.inf
+        min_value = math.inf
+        
+        for i in range(len(children)):
+            current_move = children[i]
+            current_pretty_move = game.ugly_move(current_move) #get ugly move
+            new_sum = self.evaluate_board(game, current_pretty_move, sum, color)
+            [child_best_move, child_value] = self.minimax(game, depth - 1, alpha, beta, not is_maximizing_player, new_sum, color)
+        
+            # game.undo()
+            
+            if is_maximizing_player:
+                if child_value > max_value:
+                    max_value = child_value
+                    best_move = current_pretty_move
+                alpha = max(alpha, max_value)
+            else:
+                if child_value < min_value:
+                    min_value = child_value
+                    best_move = current_pretty_move
+                beta = min(beta, min_value)
+            
+            if alpha >= beta: break
+        
+        return [best_move, max_value] if is_maximizing_player else [best_move, min_value]
