@@ -98,12 +98,14 @@ class Chess:
 
     def getMove(self, game: Board, move, depth, color):
         white_score = self.evaluate_board(game, move, self.global_sum, 'b')
-        
+        self.global_sum += white_score
         bestMove = self.makeBestMove(game, 'b', move, depth)
         
+        game.push_uci(bestMove[0]['from'] + bestMove[0]['to'])
 
         return {
-            white_score: white_score
+            'score': self.global_sum,
+            'move': bestMove[0],
         }
 
     def getBestMove(self, game: Board, color: str,cur_sum, depth):
@@ -124,12 +126,16 @@ class Chess:
         # print(game.fen())
         if game.is_legal(res):
             raise Exception("Illegal move")
+
         if color == 'b':
             move = self.getBestMove(game, color, self.global_sum, depth)
         else:
             move = self.getBestMove(game, color, -self.global_sum, depth)
         
-        self.global_sum = self.evaluate_board(game, move, self.global_sum, 'b')
+        
+        self.global_sum += self.evaluate_board(game, move[0], self.global_sum, 'b')
+
+        return move
 
   
         
@@ -186,7 +192,7 @@ class Chess:
                 prev_sum -= self.weights[move['promotion']] + self.pst_self[move['color']
                                                                             ][move['promotion']][to_position[0]][to_position[1]]
         else:
-            if move['color'] == color:
+            if move['color'] != color:
                 prev_sum += self.pst_self[move['color']
                                           ][move['piece']][from_position[0]][from_position[1]]
                 prev_sum -= self.pst_self[move['color']
@@ -207,7 +213,7 @@ class Chess:
             'from': move.uci()[:2],
             'to': move.uci()[2:],
             'piece': game.piece_at(move.from_square).symbol().lower(),
-            'captured': game.piece_at(move.to_square),
+            'captured': game.piece_at(move.to_square).symbol().lower() if game.piece_at(move.to_square) != None else None,
             'promotion': 'q',
             'flags': 'p' if game.promoted else 'n'
         } for move in game.legal_moves]
@@ -218,13 +224,19 @@ class Chess:
 
         max_value = -math.inf
         min_value = math.inf
+
+        # find children from g8 to f6
         
         for i in range(len(children)):
             # cloneGame = game.copy()
             # cloneGame.push_uci(children[i]['from'] + children[i]['to'])
            
+            # print(children[i])
+            # print(sum)
+            # print(color)
+            # return
             new_sum = self.evaluate_board(game, children[i], sum, color)
-            print(new_sum)
+            # print(new_sum)
             
             [child_best_move, child_value] = self.minimax(game, depth - 1, alpha, beta, not is_maximizing_player, new_sum, color)
         

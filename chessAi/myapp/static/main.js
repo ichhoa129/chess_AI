@@ -232,7 +232,6 @@ function evaluateBoard(game, move, prevSum, color) {
       prevSum -= pstSelf[move.color][move.piece][from[0]][from[1]];
       prevSum += pstSelf[move.color][move.piece][to[0]][to[1]];
     }
-
   }
 
   return prevSum;
@@ -258,15 +257,13 @@ function evaluateBoard(game, move, prevSum, color) {
 function minimax(game, depth, alpha, beta, isMaximizingPlayer, sum, color) {
   positionCount++;
   var children = game.ugly_moves({ verbose: true });
-  // console.log(children)
-  // console.log('--=============')
 
   // Sort moves randomly, so the same move isn't always picked on ties
-  children.sort(function (a, b) {
-    return 0.5 - Math.random();
-  });
+  // children.sort(function (a, b) {
+  //   return 0.5 - Math.random();
+  // });
 
-  var currMove;
+  var currMove; 
   // Maximum depth exceeded or node is a terminal node (no children)
   if (depth === 0 || children.length === 0) {
     return [null, sum];
@@ -276,13 +273,14 @@ function minimax(game, depth, alpha, beta, isMaximizingPlayer, sum, color) {
   var maxValue = Number.NEGATIVE_INFINITY;
   var minValue = Number.POSITIVE_INFINITY;
   var bestMove;
+
+
   for (var i = 0; i < children.length; i++) {
     currMove = children[i];
 
     // Note: in our case, the 'children' are simply modified game states
     var currPrettyMove = game.ugly_move(currMove);
     var newSum = evaluateBoard(game, currPrettyMove, sum, color);
-    console.log(newSum)
     var [childBestMove, childValue] = minimax(
       game,
       depth - 1,
@@ -387,8 +385,6 @@ function getBestMove(game, color, currSum) {
     color
   );
 
-  console.log(bestMove);
-  console.log(bestMoveValue);
 
   var d2 = new Date().getTime();
   var moveTime = d2 - d;
@@ -410,8 +406,6 @@ function makeBestMove(color) {
   } else {
     var move = getBestMove(game, color, -globalSum)[0];
   }
-
-  console.log(move);
 
   globalSum = evaluateBoard(game, move, globalSum, 'b');
   updateAdvantage();
@@ -645,6 +639,7 @@ function ajaxMove(move) {
   const body = {
     data: move,
   };
+
   $.ajax({
     headers: {
       'Content-Type': 'application/json',
@@ -653,6 +648,18 @@ function ajaxMove(move) {
     type: 'POST',
     url: '/api/move',
     data: JSON.stringify(body),
+    success: function (data) {
+      console.log('wtf')
+      const move = data.data.move
+      console.log(move)
+
+      game.move(move);
+      board.position(game.fen());
+    },
+    error: function (data) {
+      console.log('ERRORRRRRRRR');
+      console.log(data);
+    }
   });
 }
 
@@ -674,30 +681,30 @@ function onDrop(source, target) {
 
   // Send the move to the server
   ajaxMove(move);
-  globalSum = evaluateBoard(game, move, globalSum, 'b');
-  updateAdvantage();
+  // globalSum = evaluateBoard(game, move, globalSum, 'b');
+  // updateAdvantage();
 
-  // Highlight latest move
-  $board.find('.' + squareClass).removeClass('highlight-white');
+  // // Highlight latest move
+  // $board.find('.' + squareClass).removeClass('highlight-white');
 
-  $board.find('.square-' + move.from).addClass('highlight-white');
-  squareToHighlight = move.to;
-  colorToHighlight = 'white';
+  // $board.find('.square-' + move.from).addClass('highlight-white');
+  // squareToHighlight = move.to;
+  // colorToHighlight = 'white';
 
-  $board
-    .find('.square-' + squareToHighlight)
-    .addClass('highlight-' + colorToHighlight);
+  // $board
+  //   .find('.square-' + squareToHighlight)
+  //   .addClass('highlight-' + colorToHighlight);
 
-  if (!checkStatus('black'));
-  {
-    // Make the best move for black
-    window.setTimeout(function () {
-      makeBestMove('b');
-      window.setTimeout(function () {
-        // showHint();
-      }, 250);
-    }, 250);
-  }
+  // if (!checkStatus('black'));
+  // {
+  //   // Make the best move for black
+  //   window.setTimeout(function () {
+  //     makeBestMove('b');
+  //     window.setTimeout(function () {
+  //       // showHint();
+  //     }, 250);
+  //   }, 250);
+  // }
 }
 
 function onMouseoverSquare(square, piece) {
