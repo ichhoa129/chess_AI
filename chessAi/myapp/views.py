@@ -1,4 +1,5 @@
 from tokenize import String
+import traceback
 from django.shortcuts import render
 from .services.game import Game
 
@@ -17,9 +18,10 @@ def move(request):
         # get machine move
         return Response({
             'status': 'success',
-            'data': res.uci()
+            'data': res
         })
     except Exception as e:
+        print(traceback.format_exc())
         return Response({'error': str(e)})
     
 @api_view(['POST'])

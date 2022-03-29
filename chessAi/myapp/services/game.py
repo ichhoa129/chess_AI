@@ -2,13 +2,15 @@ from ast import Raise
 import numpy as np
 import chess
 
+from .chess import Chess
+
 from .SingletonMeta import SingletonMeta
 
 class Game(metaclass=SingletonMeta):
     _instance = None
     isPlaying = False
     board = None
-
+    current_move = None
     weights =  { 'p': 100, 'n': 280, 'b': 320, 'r': 479, 'q': 929, 'k': 60000, 'k_e': 60000 }
 
     pst_w = {
@@ -118,7 +120,17 @@ class Game(metaclass=SingletonMeta):
     def move(self, move):
         if not self.isPlaying:
             Raise(Exception("Game is not started"))
-        return self.board.push_uci(move)
+        mov = move['from'] + move['to']
+        self.current_move = move
+        res = self.board.push_uci(mov)
+        if self.board.is_legal(res):
+            raise Exception("Illegal move")
+        print(res)
+        gameBoard = Chess()
+        score = gameBoard.evaluate_board(self.board, move, 0, 'b')
+        print(score)
+        return score
+
 
 
     
