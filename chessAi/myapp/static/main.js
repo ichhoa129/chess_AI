@@ -1,10 +1,3 @@
-/*
- * A simple chess AI, by someone who doesn't know how to play chess.
- * Uses the chessboard.js and chess.js libraries.
- *
- * Copyright (c) 2020 Zhang Zeyu
- */
-
 var STACK_SIZE = 100; // maximum size of undo stack
 
 var board = null;
@@ -263,7 +256,7 @@ function minimax(game, depth, alpha, beta, isMaximizingPlayer, sum, color) {
   //   return 0.5 - Math.random();
   // });
 
-  var currMove; 
+  var currMove;
   // Maximum depth exceeded or node is a terminal node (no children)
   if (depth === 0 || children.length === 0) {
     return [null, sum];
@@ -345,20 +338,37 @@ function checkStatus(color) {
   return true;
 }
 
-function updateAdvantage() {
-  if (globalSum > 0) {
+// function updateAdvantage() {
+//   if (globalSum > 0) {
+//     $('#advantageColor').text('Black');
+//     $('#advantageNumber').text(globalSum);
+//   } else if (globalSum < 0) {
+//     $('#advantageColor').text('White');
+//     $('#advantageNumber').text(-globalSum);
+//   } else {
+//     $('#advantageColor').text('Neither side');
+//     $('#advantageNumber').text(globalSum);
+//   }
+//   $('#advantageBar').attr({
+//     'aria-valuenow': `${-globalSum}`,
+//     style: `width: ${((-globalSum + 2000) / 4000) * 100}%`,
+//   });
+// }
+
+function updateAdvantage(score) {
+  if (score > 0) {
     $('#advantageColor').text('Black');
-    $('#advantageNumber').text(globalSum);
-  } else if (globalSum < 0) {
+    $('#advantageNumber').text(score);
+  } else if (score < 0) {
     $('#advantageColor').text('White');
-    $('#advantageNumber').text(-globalSum);
+    $('#advantageNumber').text(-score);
   } else {
     $('#advantageColor').text('Neither side');
-    $('#advantageNumber').text(globalSum);
+    $('#advantageNumber').text(score);
   }
   $('#advantageBar').attr({
-    'aria-valuenow': `${-globalSum}`,
-    style: `width: ${((-globalSum + 2000) / 4000) * 100}%`,
+    'aria-valuenow': `${-score}`,
+    style: `width: ${((-score + 2000) / 4000) * 100}%`,
   });
 }
 
@@ -649,10 +659,12 @@ function ajaxMove(move) {
     url: '/api/move',
     data: JSON.stringify(body),
     success: function (data) {
-      console.log('wtf')
-      const move = data.data.move
-      console.log(move)
+      console.log('SUCCESSSSSSS');
+      const move = data.data.move;
+      const score = data.data.score;
+      console.log(data);
 
+      updateAdvantage(score);
       game.move(move);
       board.position(game.fen());
     },
