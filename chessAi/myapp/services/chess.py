@@ -1,5 +1,7 @@
 import math
 from chess import Board
+import random
+import copy
 
 
 class Chess:
@@ -98,17 +100,16 @@ class Chess:
 
     def getMove(self, game: Board, move, depth, color):
         white_score = self.evaluate_board(game, move, self.global_sum, 'b')
-        self.global_sum += white_score
+        print(white_score)
+        self.global_sum = white_score
         bestMove = self.makeBestMove(game, 'b', move, depth)
-        
         game.push_uci(bestMove[0]['from'] + bestMove[0]['to'])
-
         return {
             'score': self.global_sum,
             'move': bestMove[0],
         }
 
-    def getBestMove(self, game: Board, color: str,cur_sum, depth):
+    def getBestMove(self, game: Board, color: str,cur_sum, depth = 4):
         return self.minimax(
             game, 
             depth, 
@@ -122,8 +123,6 @@ class Chess:
     def makeBestMove(self, game: Board, color, move, depth):
         
         res = game.push_uci(move['from'] + move['to'])
-        # print(res)
-        # print(game.fen())
         if game.is_legal(res):
             raise Exception("Illegal move")
 
@@ -132,9 +131,7 @@ class Chess:
         else:
             move = self.getBestMove(game, color, -self.global_sum, depth)
         
-        
-        self.global_sum += self.evaluate_board(game, move[0], self.global_sum, 'b')
-
+        self.global_sum = self.evaluate_board(game, move[0], self.global_sum, 'b')
         return move
 
   
@@ -206,8 +203,6 @@ class Chess:
         return prev_sum
 
     def minimax(self, game: Board, depth, alpha, beta, is_maximizing_player, sum, color):
-        # position_count += 1
-        # print(game.fen())
         children = [{
             'color': 'w' if game.turn == 'white' else 'b',
             'from': move.uci()[:2],
@@ -217,8 +212,9 @@ class Chess:
             'promotion': 'q',
             'flags': 'p' if game.promoted else 'n'
         } for move in game.legal_moves]
-        
-        # print(children)
+
+        # sort array randomly
+        random.shuffle(children)
                 
         if depth == 0 or len(children) == 0: return [None, sum]
 
@@ -226,34 +222,23 @@ class Chess:
         min_value = math.inf
 
         # find children from g8 to f6
-        
         for i in range(len(children)):
-            # cloneGame = game.copy()
-            # cloneGame.push_uci(children[i]['from'] + children[i]['to'])
-           
-            # print(children[i])
-            # print(sum)
-            # print(color)
-            # return
-            new_sum = self.evaluate_board(game, children[i], sum, color)
-            # print(new_sum)
-            
+            game.push_uci(children[i]['from'] + children[i]['to'])
+            new_sum = self.evaluate_board(game, children[i], sum, color)            
             [child_best_move, child_value] = self.minimax(game, depth - 1, alpha, beta, not is_maximizing_player, new_sum, color)
-        
-            # game.undo()
-            
+            game.pop()
             if is_maximizing_player:
                 if child_value > max_value:
                     max_value = child_value
                     best_move = children[i]
                     # best_move = current_pretty_move
-                alpha = max(alpha, max_value)
+                alpha = max(alpha, child_value)
             else:
                 if child_value < min_value:
                     min_value = child_value
                     best_move = children[i]
                     # best_move = current_pretty_move
-                beta = min(beta, min_value)
+                beta = min(beta, child_value)
             
             if alpha >= beta: break
         
