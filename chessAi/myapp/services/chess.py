@@ -174,7 +174,7 @@ class Chess:
                 prev_sum -= self.weights[move['captured']] + self.pst_self[move['color']
                                                                            ][move['captured']][to_position[0]][to_position[1]]
 
-        if move['flags'] == 'p':
+        if 'p' in move['flags']:
             # promote to queen
             move['promotion'] = 'q'
 
@@ -204,7 +204,7 @@ class Chess:
 
     def minimax(self, game: Board, depth, alpha, beta, is_maximizing_player, sum, color):
         children = [{
-            'color': 'w' if game.turn == 'white' else 'b',
+            'color': 'w' if game.turn else 'b',
             'from': move.uci()[:2],
             'to': move.uci()[2:],
             'piece': game.piece_at(move.from_square).symbol().lower(),
