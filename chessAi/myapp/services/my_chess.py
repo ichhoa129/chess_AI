@@ -1,7 +1,6 @@
 import math
 from chess import Board
 import random
-import copy
 
 
 class Chess:
@@ -100,7 +99,6 @@ class Chess:
 
     def getMove(self, game: Board, move, depth, color):
         white_score = self.evaluate_board(game, move, self.global_sum, 'b')
-        print(white_score)
         self.global_sum = white_score
         bestMove = self.makeBestMove(game, 'b', move, depth)
         game.push_uci(bestMove[0]['from'] + bestMove[0]['to'])
@@ -121,7 +119,6 @@ class Chess:
             )
 
     def makeBestMove(self, game: Board, color, move, depth):
-        
         res = game.push_uci(move['from'] + move['to'])
         if game.is_legal(res):
             raise Exception("Illegal move")

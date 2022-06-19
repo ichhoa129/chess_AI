@@ -1,9 +1,7 @@
 from ast import Raise
-from distutils import dep_util
-import numpy as np
 import chess
 
-from .chess import Chess
+from myapp.services.my_chess import Chess
 
 from .SingletonMeta import SingletonMeta
 
@@ -39,6 +37,10 @@ class Game(metaclass=SingletonMeta):
         result = gameBoard.getMove(self.board, move, self.depth, 'b')
         return result
 
-
-
-    
+    def move2(self, board:chess.Board, move):
+        if not self.isPlaying:
+            Raise(Exception("Game is not started"))
+        self.current_move = move
+        gameBoard = Chess()
+        result = gameBoard.getMove(board, move, self.depth, 'b')
+        return result
