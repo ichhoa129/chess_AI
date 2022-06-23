@@ -23,20 +23,20 @@ timer = null;
 
 function checkStatus(color) {
   if (game.in_checkmate()) {
-    $('#status').html(`<b>Checkmate!</b> Oops, <b>${color}</b> lost.`);
+    document.getElementById("status").innerHTML = `<b>Checkmate!</b> Oops, <b>${color}</b> lost.`;
   } else if (game.insufficient_material()) {
-    $('#status').html(`It's a <b>draw!</b> (Insufficient Material)`);
+    document.getElementById("status").innerHTML = `It's a <b>draw!</b> (Insufficient Material)`;
   } else if (game.in_threefold_repetition()) {
-    $('#status').html(`It's a <b>draw!</b> (Threefold Repetition)`);
+    document.getElementById("status").innerHTML = `It's a <b>draw!</b> (Threefold Repetition)`;
   } else if (game.in_stalemate()) {
-    $('#status').html(`It's a <b>draw!</b> (Stalemate)`);
+    document.getElementById("status").innerHTML = `It's a <b>draw!</b> (Stalemate)`;
   } else if (game.in_draw()) {
-    $('#status').html(`It's a <b>draw!</b> (50-move Rule)`);
+    document.getElementById("status").innerHTML = `It's a <b>draw!</b> (50-move Rule)`;
   } else if (game.in_check()) {
-    $('#status').html(`Oops, <b>${color}</b> is in <b>check!</b>`);
+    document.getElementById("status").innerHTML = `Oops, <b>${color}</b> is in <b>check!</b>`;
     return false;
   } else {
-    $('#status').html(`No check, checkmate, or draw.`);
+    document.getElementById("status").innerHTML = `No check, checkmate, or draw.`;
     return false;
   }
   return true;
@@ -232,17 +232,16 @@ function ajaxMove(move) {
     url: '/api/move',
     data: JSON.stringify(body),
     success: function (data) {
-      console.log('SUCCESSSSSSS');
-      if(data.error) {
-        console.log(data)
+      if (data.error) {
         ajaxStop();
       } else {
         const move = data.data.move;
         const score = data.data.score;
-        console.log(data);
-  
+        console.log('SUCCESSSSS');
+        console.log(data.data);
         updateAdvantage(score);
         game.move(move);
+        checkStatus('white')
         board.position(game.fen());
       }
     },
@@ -254,6 +253,7 @@ function ajaxMove(move) {
 }
 
 function onDrop(source, target) {
+  checkStatus('black')
   undo_stack = [];
   removeGreySquares();
   var move = game.move({
@@ -268,9 +268,7 @@ function onDrop(source, target) {
 
   // Send the move to the server
   ajaxMove(move);
-
 }
-  
 
 function onMouseoverSquare(square, piece) {
   // get list of possible moves for this square

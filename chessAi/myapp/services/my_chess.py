@@ -118,21 +118,25 @@ class Chess:
             color
             )
 
+    def checkStatus(self, game: Board):
+        if game.is_checkmate() or game.is_stalemate() or game.can_claim_threefold_repetition() or game.is_variant_draw() or game.is_check():
+            return False
+        return True
+
     def makeBestMove(self, game: Board, color, move, depth):
         res = game.push_uci(move['from'] + move['to'])
         if game.is_legal(res):
             raise Exception("Illegal move")
 
         if color == 'b':
+            self.checkStatus(game)
             move = self.getBestMove(game, color, self.global_sum, depth)
         else:
+            self.checkStatus(game)
             move = self.getBestMove(game, color, -self.global_sum, depth)
         
         self.global_sum = self.evaluate_board(game, move[0], self.global_sum, 'b')
         return move
-
-  
-        
 
     def evaluate_board(self, game: Board, move, prev_sum, color):
         if game.is_checkmate():  # game in checkmate
