@@ -253,7 +253,6 @@ function ajaxMove(move) {
 }
 
 function onDrop(source, target) {
-  checkStatus('black')
   undo_stack = [];
   removeGreySquares();
   var move = game.move({
@@ -261,6 +260,7 @@ function onDrop(source, target) {
     to: target,
     promotion: 'q', // NOTE: always promote to a queen for example simplicity
   });
+  checkStatus('black')
 
 
   // Illegal move
