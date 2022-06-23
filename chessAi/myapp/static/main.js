@@ -219,6 +219,7 @@ function updateAdvantage(score) {
 }
 
 function ajaxMove(move) {
+  checkStatus('black')
   const body = {
     data: move,
   };
@@ -260,8 +261,6 @@ function onDrop(source, target) {
     to: target,
     promotion: 'q', // NOTE: always promote to a queen for example simplicity
   });
-  checkStatus('black')
-
 
   // Illegal move
   if (move === null) return 'snapback';
