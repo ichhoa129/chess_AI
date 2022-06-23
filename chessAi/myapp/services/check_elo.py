@@ -45,7 +45,7 @@ def main():
     # game = Game()
     # game.start()
     fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
-    game_id = '3KiV8n8P'
+    game_id = 'SBxKkG9k'
     botFen = fen
     while True:
         lichess_game = lichess.get_game_info()
@@ -67,9 +67,15 @@ def main():
         }
         print('lichess: ', data)
         x = requests.post(url, json = data)
+        print(x)
         res = x.json()
-        botFen = res.get('fen')
+        print(res)
+        if not res:
+            x = requests.post(url, json = data)
+            res = x.json()
+            
         uci_move = res.get('move').get('from') + res.get('move').get('to')
+        botFen = res.get('fen')
         print('my_bot: ', uci_move)
         lichess.move(game_id, uci_move)
         # fen = board.fen()
