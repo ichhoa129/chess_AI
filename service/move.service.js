@@ -20,6 +20,7 @@ module.exports.movePiece = (move, fen) => {
 
   const result = makeBestMove('b', game, globalSum);
   return {
+    oldMove: movement,
     newMove: result.move,
     newFen: result.fen,
   };
